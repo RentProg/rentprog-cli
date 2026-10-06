@@ -1,0 +1,13 @@
+{
+  "name": "@rentprog/cli",
+  "version": "0.1.0",
+  "description": "RentProg in the terminal for AI agents and scripts: every tool of your RentProg MCP catalog as a command.",
+  "type": "module",
+  "bin": { "rentprog": "bin/rentprog.js" },
+  "files": ["bin", "src", "README.md", "LICENSE"],
+  "engines": { "node": ">=20.18.1" },
+  "scripts": { "test": "node --test --test-timeout=60000", "mutate": "node scripts/mutate.mjs" },
+  "dependencies": { "@modelcontextprotocol/sdk": "~1.32.1", "undici": "^7.16.0" },
+  "repository": { "type": "git", "url": "git+https://github.com/RentProg/rentprog-cli.git" },
+  "license": "MIT"
+}
