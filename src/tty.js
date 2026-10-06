@@ -4,8 +4,8 @@ export const interactive = ({ stdin, stdout, cli, env }) => !!(stdin.isTTY && st
 export async function ask(question, { stdin, stderr }) {
   const rl = readline.createInterface({ input: stdin, output: stderr });
   const closed = new Promise((r) => rl.once("close", () => r("")));   // Ctrl-D / end of input = "no"
-  try { return /^y(es)?$/i.test(String(await Promise.race([rl.question(question), closed])).trim()); }
-  catch { return false; }
+  const answer = rl.question(question).catch(() => "");               // a question aborted by close is "no" too
+  try { return /^y(es)?$/i.test(String(await Promise.race([answer, closed])).trim()); }
   finally { rl.close(); }
 }
 // Скрытый ввод ключа (только в интерактиве): эхо выключено, вставка приходит пачкой символов.

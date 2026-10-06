@@ -11,7 +11,7 @@ const MUTANTS = [
   // addresses and key (CON-03)
   ["src/hosts.js", "return RENTPROG_HOSTS.has(u.hostname) || allowHost;", "return true;"],
   ["src/hosts.js", "`rpa_…${String(key).slice(-4)}`", "String(key)"],
-  ["src/cli.js", "if (!foreign) { saveConfig(", "if (true) { saveConfig("],
+  ["src/cli.js", "export const loginSaves = ({ foreign }) => !foreign;", "export const loginSaves = ({ foreign }) => true;"],
   ["src/cli.js", "if (r.isError) return fail(io, { kind: \"result\", result: r, write: false }, toolError(r));   // not saved", "if (false) return 0;   // not saved"],
   ["src/cli.js", 'if (!key && rest.includes("--key-stdin")) key = await readStdin(io.stdin);', ""],
   ["src/config.js", "throw new CliError(2, `settings file is damaged", "return null; throw new CliError(2, `settings file is damaged"],
@@ -77,8 +77,7 @@ const MUTANTS = [
   ["src/flags.js", "const bare = () => { if (inline !== undefined) throw", "const bare = () => { if (false) throw"],
   ["src/hosts.js", "if (!isAllowedUrl(canonicalUrl(saved.url), {})) throw", "if (false) throw"],
   ["src/exit.js", "if (fromOperationStatus && !result.isError) return", "if (fromOperationStatus) return"],
-  ["src/wait.js", "if (result.isError || !isPending(", "if (!isPending("],
-  ["src/tty.js", "catch { return false; }", "catch (e) { throw e; }"],
+  ["src/tty.js", 'const closed = new Promise((r) => rl.once("close", () => r("")));', "const closed = new Promise(() => {});"],
   ["src/cli.js", ".replace(/\\brentprog (?=", ".replace(/\\bNEVER (?="],
   ["bin/rentprog.js", 'if (e.code === "EPIPE") process.exit(0);', ""],
   ["src/http.js", "noProxy: env.NO_PROXY ?? env.no_proxy", 'noProxy: ""'],

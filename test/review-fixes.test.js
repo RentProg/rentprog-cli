@@ -28,6 +28,9 @@ test("login: на чужом хосте уходит только ключ из 
   const { loginKey } = await import("../src/cli.js");
   assert.equal(loginKey({ foreign: true, rest: ["rpa_positional"], env: { RENTPROG_API_KEY: "rpa_env" } }), "rpa_env");
   assert.equal(loginKey({ foreign: false, rest: ["rpa_positional"], env: { RENTPROG_API_KEY: "rpa_env" } }), "rpa_positional");
+  const { loginSaves } = await import("../src/cli.js");
+  assert.equal(loginSaves({ foreign: true }), false);   // a key checked on a foreign host is never saved
+  assert.equal(loginSaves({ foreign: false }), true);
   const h = harness({ RENTPROG_API_KEY: "rpa_env" });
   assert.equal(await main(["login", "--url", "https://evil.example/mcp"], h.io), 2);
   assert.equal(existsSync(h.configFile), false);

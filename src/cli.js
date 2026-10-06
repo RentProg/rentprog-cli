@@ -49,6 +49,8 @@ export function loginKey({ foreign, rest, env }) {
   return rest[0] && !rest[0].startsWith("--") ? rest[0] : null;
 }
 
+export const loginSaves = ({ foreign }) => !foreign;   // a key checked on a foreign host (--allow-host) is never saved
+
 async function login(rest, io, paths) {
   const url = canonicalUrl(flagValue(rest, "--url") ?? DEFAULT_URL);
   // Foreign host: only with --allow-host and the key from RENTPROG_API_KEY; checked, never saved (cli-contract §5)
@@ -70,7 +72,7 @@ async function login(rest, io, paths) {
       if (r.isError) return fail(io, { kind: "result", result: r, write: false }, toolError(r));   // not saved (EC-01)
       who = r.structuredContent ?? {};
     }
-    if (!foreign) { saveConfig(paths, { url, key }); writeTools(paths, url, key, list); }
+    if (loginSaves({ foreign })) { saveConfig(paths, { url, key }); writeTools(paths, url, key, list); }
     const saved = foreign ? " — not saved (foreign host)" : "";
     io.stderr.write(who
       ? `Connected: ${who.user?.name ?? "?"} (${maskKey(key)})${saved}\nLevels: ${JSON.stringify(who.levels ?? {})}\nNext: ${io.argv0} tools\n`
