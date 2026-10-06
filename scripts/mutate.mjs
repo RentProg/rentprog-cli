@@ -77,7 +77,7 @@ const MUTANTS = [
   ["src/flags.js", "const bare = () => { if (inline !== undefined) throw", "const bare = () => { if (false) throw"],
   ["src/hosts.js", "if (!isAllowedUrl(canonicalUrl(saved.url), {})) throw", "if (false) throw"],
   ["src/exit.js", "if (fromOperationStatus && !result.isError) return", "if (fromOperationStatus) return"],
-  ["src/tty.js", 'const closed = new Promise((r) => rl.once("close", () => r("")));', "const closed = new Promise(() => {});"],
+  ["src/tty.js", 'rl.once("close", () => setImmediate(() => r(""))));', "rl.once(\"close\", () => {}));"],
   ["src/cli.js", ".replace(/\\brentprog (?=", ".replace(/\\bNEVER (?="],
   ["bin/rentprog.js", 'if (e.code === "EPIPE") process.exit(0);', ""],
   ["src/http.js", "noProxy: env.NO_PROXY ?? env.no_proxy", 'noProxy: ""'],
