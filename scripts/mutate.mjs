@@ -69,9 +69,22 @@ const MUTANTS = [
   ["src/cli.js", "if (bare && inline !== undefined) throw", "if (false) throw"],
   ["src/write.js", "return { key, result: r.result, outcome: { kind: \"result\", result: r.result, write: true, hadTokenInCall: true } };", "return { key, result: r.result, outcome: { kind: \"result\", result: r.result, write: true, hadTokenInCall: false } };"],
   // proxy (cli-contract §7)
-  ["src/http.js", "const dispatcher = hasProxy && !env.NODE_USE_ENV_PROXY", "const dispatcher = false"],
+  ["src/http.js", "  const dispatcher = hasProxy\n", "  const dispatcher = false\n"],
+  ["src/http.js", "  const dispatcher = hasProxy\n", "  const dispatcher = hasProxy && !env.NODE_USE_ENV_PROXY\n"],
+  // STEP-11 code review fixes
+  ["src/cli.js", "if (foreign && !isAllowedUrl(url, { allowHost: true })) throw", "if (false) throw"],
+  ["src/cli.js", "if (foreign) return env.RENTPROG_API_KEY;", ""],
+  ["src/flags.js", "const bare = () => { if (inline !== undefined) throw", "const bare = () => { if (false) throw"],
+  ["src/hosts.js", "if (!isAllowedUrl(canonicalUrl(saved.url), {})) throw", "if (false) throw"],
+  ["src/exit.js", "if (fromOperationStatus && !result.isError) return", "if (fromOperationStatus) return"],
+  ["src/wait.js", "if (result.isError || !isPending(", "if (!isPending("],
+  ["src/tty.js", "catch { return false; }", "catch (e) { throw e; }"],
+  ["src/cli.js", ".replace(/\\brentprog (?=", ".replace(/\\bNEVER (?="],
+  ["bin/rentprog.js", 'if (e.code === "EPIPE") process.exit(0);', ""],
   ["src/http.js", "noProxy: env.NO_PROXY ?? env.no_proxy", 'noProxy: ""'],
 ];
+// A red baseline would "kill" every mutant: the suite must be green before mutating.
+try { execSync("npm test", { stdio: "ignore", timeout: 180_000 }); } catch { console.log("baseline: npm test is red — fix it before mutating"); process.exit(1); }
 let survived = 0;
 for (const [file, from, to] of MUTANTS) {
   const src = readFileSync(file, "utf8");

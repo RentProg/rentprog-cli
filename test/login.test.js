@@ -45,15 +45,14 @@ test("--key-stdin читает ключ из stdin", async (t) => {
   assert.equal(JSON.parse(readFileSync(h.configFile, "utf8")).key, KEY);
 });
 
-test("чужой адрес: без --allow-host — 2; с --allow-host и ключом из окружения — проверка без сохранения (FM-02, §5)", async (t) => {
+test("чужой адрес: без --allow-host — 2; с --allow-host и ключом из окружения — попытка по https без сохранения (FM-02, §5)", async () => {
   const h = harness();
   assert.equal(await main(["login", "rpa_x", "--url", "https://evil.example/mcp"], h.io), 2);
   assert.equal(existsSync(h.configFile), false);
-  // «Чужой» хост — 0.0.0.0: локальный, но не в allowlist (там только localhost, 127.0.0.1, ::1)
-  const srv = await startFakeServer({ tools: [R("whoami")], handler: who, host: "0.0.0.0" }); t.after(srv.close);
+  // Чужой хост по https с --allow-host и ключом окружения: CLI идёт туда (здесь — несуществующий домен, код 4 до отправки),
+  // но ничего не сохраняет; по http чужой хост — 2 до запроса (review-fixes.test.js)
   const h2 = harness({ RENTPROG_API_KEY: KEY });
-  assert.equal(await main(["login", "--url", srv.url, "--allow-host"], h2.io), 0);
-  assert.match(h2.stderr(), /not saved/);
+  assert.equal(await main(["login", "--url", "https://foreign.invalid/mcp", "--allow-host"], h2.io), 4);
   assert.equal(existsSync(h2.configFile), false);
 });
 

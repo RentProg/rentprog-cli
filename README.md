@@ -62,10 +62,13 @@ waits for the decision (120 seconds by default); to wait later, use `rentprog op
 | 10 | waiting for approval or still running | `rentprog operation_status --operation-id … --wait` (do not rerun the write) |
 | 11 | preview shown, nothing applied | confirm with `--yes` or the printed continuation |
 
-Errors go to stderr as JSON (`error`, `message`, `details`, `exit_code`) when the output is not a terminal.
+Errors go to stderr as JSON (`error`, `message`, `details`, `exit_code`) unless both stdin and stdout are a terminal; `--no-input`
+or `RENTPROG_NO_INPUT=1` forces JSON and never asks questions.
 
 ## Agent sandboxes
 
+- **Any agent:** set `RENTPROG_NO_INPUT=1` (or pass `--no-input`) so the CLI never waits for a y/N answer, even in a
+  pseudo-terminal; confirm previews with `--yes` or the printed continuation.
 - **ChatGPT agent mode** — works as is; the CLI uses the sandbox proxy from `HTTPS_PROXY`.
 - **Codex CLI** — its default sandbox has no network: run `login` outside the sandbox once and allow network for the
   commands (cloud Codex: allow `registry.npmjs.org` and your MCP address).

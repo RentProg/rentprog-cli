@@ -6,7 +6,7 @@ export const UNKNOWN_OUTCOME = (c) => !!c && (UNKNOWN_EXACT.has(c) || UNKNOWN.so
 
 function view(result, fromOperationStatus) {
   const sc = result.structuredContent ?? {};
-  if (fromOperationStatus) return { status: sc.status, code: sc.error_code ?? sc.error?.code, retryable: sc.error?.details?.retryable === true, isError: !!result.isError };
+  if (fromOperationStatus && !result.isError) return { status: sc.status, code: sc.error_code ?? sc.error?.code, retryable: sc.error?.details?.retryable === true, isError: !!result.isError };
   if (result.isError) return { status: sc.details?.status, code: sc.error, retryable: sc.details?.retryable === true, isError: true };
   return { status: sc.status, code: undefined, retryable: false, isError: false };
 }

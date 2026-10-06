@@ -34,10 +34,15 @@ const CASES = [
 // Tools absent from this key's catalog (e.g. CRM on a tenant without it) are reported as skip, not as a failure.
 const catalog = new Set(json(run(["tools", "--format", "json"]).out).items.map((t) => t.name));
 const COMMANDS = new Set(["whoami", "tools", "help"]);
+const OPTIONAL = new Set(["crm_leads"]);   // CRM depends on the tenant's plan
 let bad = 0;
 for (const [a, expected, check] of CASES) {
   const args = typeof a === "function" ? a() : a;
-  if (!COMMANDS.has(args[0]) && !catalog.has(args[0])) { console.log(`skip ${args.join(" ").padEnd(60)} (not in this key's catalog)`); continue; }
+  if (!COMMANDS.has(args[0]) && !catalog.has(args[0])) {
+    // only optional areas may be absent; reads of fleet/money/staff and the preview write must run, or CHK-02 says nothing
+    if (!OPTIONAL.has(args[0])) { console.log(`FAIL ${args.join(" ").padEnd(60)} not in this key's catalog — issue the key per Task 10`); bad++; continue; }
+    console.log(`skip ${args.join(" ").padEnd(60)} (not in this key's catalog)`); continue;
+  }
   const r = run(args);
   let ok = r.code === expected;
   try { ok = ok && !!check(r); } catch { ok = false; }

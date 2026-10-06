@@ -3,7 +3,10 @@ import readline from "node:readline/promises";
 export const interactive = ({ stdin, stdout, cli, env }) => !!(stdin.isTTY && stdout.isTTY) && !cli.noInput && env.RENTPROG_NO_INPUT !== "1";
 export async function ask(question, { stdin, stderr }) {
   const rl = readline.createInterface({ input: stdin, output: stderr });
-  try { return /^y(es)?$/i.test((await rl.question(question)).trim()); } finally { rl.close(); }
+  const closed = new Promise((r) => rl.once("close", () => r("")));   // Ctrl-D / end of input = "no"
+  try { return /^y(es)?$/i.test(String(await Promise.race([rl.question(question), closed])).trim()); }
+  catch { return false; }
+  finally { rl.close(); }
 }
 // Скрытый ввод ключа (только в интерактиве): эхо выключено, вставка приходит пачкой символов.
 export function askSecret(question, { stdin, stderr }) {

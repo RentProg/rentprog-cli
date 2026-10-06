@@ -28,6 +28,8 @@ const USAGE = (a) => `usage: ${a} login <key> [--url <address>] | logout | whoam
 function fail(io, outcome, payload) {
   const { code } = exitCode(outcome);
   const tty = interactive({ stdin: io.stdin, stdout: io.stdout, cli: { noInput: io.noInput }, env: io.env });
+  // hints from other modules say `rentprog …`; repeat the way the CLI was started (REQ-01: npx or the installed command)
+  payload = { ...payload, message: String(payload.message ?? "").replace(/\brentprog (?=(login|help|tools|whoami|operation_status)\b)/g, `${io.argv0} `) };
   io.stderr.write(tty ? `${payload.message}\n` : `${JSON.stringify({ error: payload.error ?? "error", message: payload.message, details: payload.details ?? {}, exit_code: code })}\n`);
   return code;
 }
@@ -41,13 +43,20 @@ function flagValue(rest, flag) {
 }
 const readStdin = (stdin) => new Promise((r) => { let b = ""; stdin.setEncoding?.("utf8"); stdin.on("data", (c) => (b += c)); stdin.on("end", () => r(b.trim())); });
 
+// The key login checks: on a foreign host (--allow-host) only RENTPROG_API_KEY, never a positional key (cli-contract §5)
+export function loginKey({ foreign, rest, env }) {
+  if (foreign) return env.RENTPROG_API_KEY;
+  return rest[0] && !rest[0].startsWith("--") ? rest[0] : null;
+}
+
 async function login(rest, io, paths) {
   const url = canonicalUrl(flagValue(rest, "--url") ?? DEFAULT_URL);
   // Foreign host: only with --allow-host and the key from RENTPROG_API_KEY; checked, never saved (cli-contract §5)
   const foreign = !isAllowedUrl(url, {});
   if (foreign && !(rest.includes("--allow-host") && io.env.RENTPROG_API_KEY))
     throw new CliError(2, `address not allowed: ${url} (only RentProg addresses; for another host use RENTPROG_API_KEY with --allow-host, nothing is saved)`);
-  let key = foreign ? io.env.RENTPROG_API_KEY : rest[0] && !rest[0].startsWith("--") ? rest[0] : null;
+  if (foreign && !isAllowedUrl(url, { allowHost: true })) throw new CliError(2, `address not allowed: ${url} (another host only over https)`);
+  let key = loginKey({ foreign, rest, env: io.env });
   if (!key && rest.includes("--key-stdin")) key = await readStdin(io.stdin);
   if (!key && interactive({ stdin: io.stdin, stdout: io.stdout, cli: { noInput: io.noInput }, env: io.env })) key = await askSecret("RentProg key (rpa_…): ", io);
   if (!key) throw new CliError(2, `key required: ${io.argv0} login <key> --url <address from your RentProg profile>`);
@@ -157,7 +166,10 @@ async function callWrite(client, tool, args, cli, format, io) {
     const e = final.outcome.error;
     return fail(io, final.outcome, { error: "transport", message: `${e.message} while waiting; the write was accepted — check: ${io.argv0} operation_status --operation-id ${sc.operation_id}`, details: { status: e.status ?? null, operation_id: sc.operation_id } });
   }
-  if (final.result.isError) return fail(io, final.outcome, toolError(final.result));
+  if (final.result.isError) {
+    const e = toolError(final.result);
+    return fail(io, final.outcome, final === w ? e : { ...e, message: `${e.message} (while waiting; the write was accepted — check: ${io.argv0} operation_status --operation-id ${sc.operation_id} --wait)`, details: { ...e.details, operation_id: sc.operation_id } });
+  }
   io.stdout.write(render(final.result.structuredContent ?? {}, format));
   return exitCode(final.outcome).code;
 }

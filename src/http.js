@@ -8,7 +8,8 @@ const BEFORE_SEND = new Set(["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "EHOSTUNR
 
 export function makeFetch({ timeoutMs = 60000, env = process.env } = {}) {
   const hasProxy = env.HTTPS_PROXY || env.https_proxy || env.HTTP_PROXY || env.http_proxy;
-  const dispatcher = hasProxy && !env.NODE_USE_ENV_PROXY
+  // always our own dispatcher: NODE_USE_ENV_PROXY is honoured by Node 24 only; on 20/22 it would mean "no proxy at all"
+  const dispatcher = hasProxy
     ? new EnvHttpProxyAgent({ httpProxy: env.HTTP_PROXY || env.http_proxy, httpsProxy: env.HTTPS_PROXY || env.https_proxy, noProxy: env.NO_PROXY ?? env.no_proxy })
     : undefined;
   const last = { status: null, retryAfter: null };

@@ -28,7 +28,8 @@ export async function waitFor(client, operationId, seconds, io) {
       const r = await within(client.callTool("operation_status", { operation_id: operationId }), deadline - Date.now());
       if (r === EXPIRED) return expired();
       result = r;
-      if (!isPending(result.structuredContent?.status)) return { result, outcome: { kind: "result", result, fromOperationStatus: true } };
+      // a tool error of operation_status (internal, not_found…) is the answer of a read: stop and report it (code by §3, internal → 4)
+      if (result.isError || !isPending(result.structuredContent?.status)) return { result, outcome: { kind: "result", result, write: false, fromOperationStatus: true } };
     } catch (e) {
       // polling is a read (operation_status): a failure here does not make the write unknown — code 4, not 5
       if (!(e instanceof TransportError)) throw e;

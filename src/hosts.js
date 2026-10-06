@@ -26,6 +26,8 @@ export function resolveCredentials({ env, saved, flags }) {
     return { url, key: env.RENTPROG_API_KEY, source: "env" };
   }
   if (!saved) throw new CliError(2, "not connected: run `rentprog login <key> --url <address from your RentProg profile>`");
+  // the saved file is local and editable: re-check the address before the key goes anywhere (cli-contract §5)
+  if (!isAllowedUrl(canonicalUrl(saved.url), {})) throw new CliError(2, `saved address is not a RentProg address: ${saved.url} — run login again`);
   if (env.RENTPROG_MCP_URL && canonicalUrl(env.RENTPROG_MCP_URL) !== saved.url)
     throw new CliError(2, "RENTPROG_MCP_URL differs from the saved address; the saved key is not sent elsewhere (set RENTPROG_API_KEY too)");
   return { url: saved.url, key: saved.key, source: "config" };

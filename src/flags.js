@@ -48,6 +48,7 @@ export function parseToolArgs(argv, schema) {
     if (!tok.startsWith("--")) throw new CliError(2, `unexpected argument: ${tok}`);
     let name = tok.slice(2); let inline;
     if (name.includes("=")) [name, inline] = [name.slice(0, name.indexOf("=")), name.slice(name.indexOf("=") + 1)];
+    const bare = () => { if (inline !== undefined) throw new CliError(2, `--${name} takes no value`); };
     const next = () => { const v = inline !== undefined ? inline : argv[++i]; if (v === undefined) throw new CliError(2, `--${name}: value required`); return v; };
     if (name === "args") {
       const v = next(); base = json("args", v.startsWith("@") ? readFile(v.slice(1)) : v);
@@ -55,7 +56,7 @@ export function parseToolArgs(argv, schema) {
       continue;
     }
     if (name === "format") { cli.format = checkFormat(next()); continue; }
-    if (name === "all") { cli.all = true; continue; }
+    if (name === "all") { bare(); cli.all = true; continue; }
     if (name === "max-pages") { cli.maxPages = positive(name, next()); continue; }
     if (name === "wait") {
       if (inline !== undefined) cli.wait = positive(name, inline);
@@ -63,10 +64,10 @@ export function parseToolArgs(argv, schema) {
       else cli.wait = true;
       continue;
     }
-    if (name === "yes") { cli.yes = true; continue; }
-    if (name === "no-input") { cli.noInput = true; continue; }
-    if (name === "allow-host") { cli.allowHost = true; continue; }
-    if (name === "help") { cli.help = true; continue; }
+    if (name === "yes") { bare(); cli.yes = true; continue; }
+    if (name === "no-input") { bare(); cli.noInput = true; continue; }
+    if (name === "allow-host") { bare(); cli.allowHost = true; continue; }
+    if (name === "help") { bare(); cli.help = true; continue; }
     if (name === "idempotency-key") { cli.idempotencyKey = next(); if (props.idempotency_key) fromFlags.idempotency_key = cli.idempotencyKey; continue; }
     if (name === "preview-token") { cli.previewToken = next(); if (props.preview_token) fromFlags.preview_token = cli.previewToken; continue; }
     let negated = false;
