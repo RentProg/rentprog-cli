@@ -3,8 +3,8 @@
 RentProg in the terminal for AI agents and scripts. Every tool of your RentProg MCP catalog becomes a command:
 bookings, cars, clients, CRM, money, staff — exactly what your key allows.
 
-Made for agents that run shell commands but cannot connect an MCP server (ChatGPT agent mode, Codex and similar),
-and for your own scripts.
+Made for agents that run shell commands — above all ChatGPT agent mode, which cannot connect an MCP server with a
+key — and for your own scripts. Requires Node.js 20.18 or newer.
 
 ## Connect
 
