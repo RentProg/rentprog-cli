@@ -76,8 +76,8 @@ or `RENTPROG_NO_INPUT=1` forces JSON and never asks questions.
 
 ## Security
 
-The key is sent only to RentProg servers (`api.rentprog.ru`, `api.rentprog.com`, `rentprog.net`, `rentprog.pro`) and to
-`localhost`; another address is refused unless you pass `--allow-host` together with `RENTPROG_API_KEY`. The saved key is
+The key is sent only to RentProg servers and to `localhost`; another address is refused unless you pass `--allow-host`
+together with `RENTPROG_API_KEY` (and only over https). The saved key is
 never sent to a different address than the one it was checked against. The CLI prints only the last 4 characters of a key.
 
 ## License
